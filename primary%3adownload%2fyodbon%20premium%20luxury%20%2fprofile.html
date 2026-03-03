@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="tg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профил - ЁДБОН</title>
+    <link rel="stylesheet" href="style.css">
+    <script>
+        const t = localStorage.getItem('y_t') || "0";
+        document.documentElement.className = t === "1" ? "theme-day" : "theme-night";
+    </script>
+</head>
+<body>
+    <header>
+        <div class="logo" onclick="location.href='index.html'">ЁДБОН</div>
+        <div class="theme-switch" onclick="toggleTheme()"><div class="ball" id="t-icon">🌙</div></div>
+    </header>
+
+    <main class="container">
+        <div class="card" style="text-align:center; padding:30px 20px; border-bottom: 4px solid var(--gold);">
+            <div style="width:70px; height:70px; background:var(--gold); border-radius:50%; margin:0 auto 15px; display:flex; align-items:center; justify-content:center; font-size:30px; color:#000; box-shadow: 0 8px 20px rgba(212,175,55,0.3);">👤</div>
+            <h2 style="font-size:22px;">Омӯзгор</h2>
+            <p style="font-size:11px; opacity:0.5; font-weight:800; margin-top:5px; letter-spacing:1px;">ЗАБОНДОНИ ЯҒНОБӢ</p>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:25px;">
+            <div class="card" style="text-align:center; padding:15px;">
+                <b id="c-less" style="color:var(--gold); font-size:20px; display:block;">0</b>
+                <span style="font-size:10px; font-weight:800; opacity:0.6;">ДАРСҲО</span>
+            </div>
+            <div class="card" style="text-align:center; padding:15px;">
+                <b id="c-fav" style="color:var(--gold); font-size:20px; display:block;">0</b>
+                <span style="font-size:10px; font-weight:800; opacity:0.6;">ГАНҶҲО</span>
+            </div>
+        </div>
+
+        <h3 style="margin-bottom:15px; font-size:17px; padding-left:5px;">Ганҷҳои захирашуда ❤️</h3>
+        <div id="fav-list"></div>
+    </main>
+
+    <nav class="bottom-nav">
+        <a href="index.html" class="nav-item"><div class="nav-icon">🏠</div>АСОСӢ</a>
+        <a href="lessons.html" class="nav-item"><div class="nav-icon">🎓</div>ДАРСҲО</a>
+        <a href="dictionary.html" class="nav-item"><div class="nav-icon">📖</div>ЛУҒАТ</a>
+        <a href="profile.html" class="nav-item active"><div class="nav-icon">👤</div>ПРОФИЛ</a>
+    </nav>
+
+    <script src="app.js"></script>
+    <script>
+        function renderProfile() {
+            const words = db('y_words'); const favs = db('y_favs');
+            document.getElementById('c-less').innerText = db('y_done').length;
+            document.getElementById('c-fav').innerText = favs.length;
+
+            const saved = words.filter(w => favs.includes(w.id));
+            document.getElementById('fav-list').innerHTML = saved.length ? saved.map(w => `
+                <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div><b>${w.word}</b><p style="font-size:13px; opacity:0.7; margin-top:2px;">${w.mean}</p></div>
+                    <span onclick="rem(${w.id})" style="cursor:pointer; font-size:20px;">❤️</span>
+                </div>
+            `).reverse().join('') : '<p style="text-align:center; opacity:0.4; padding:30px;">Хазина холӣ аст</p>';
+        }
+        function rem(id) {
+            let f = db('y_favs').filter(x => x !== id);
+            localStorage.setItem('y_favs', JSON.stringify(f)); renderProfile();
+        }
+        window.onload = () => { applyTheme(); renderProfile(); };
+    </script>
+</body>
+</html>

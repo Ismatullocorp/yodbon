@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="tg">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Дарсҳо - ЁДБОН</title><link rel="stylesheet" href="style.css">
+    <script>
+        const t = localStorage.getItem('y_t') || "0";
+        document.documentElement.className = t === "1" ? "theme-day" : "theme-night";
+    </script>
+</head>
+<body>
+    <header>
+        <div class="logo" onclick="location.href='index.html'">ЁДБОН</div>
+        <div class="theme-switch" onclick="toggleTheme()"><div class="ball" id="t-icon">🌙</div></div>
+    </header>
+    <main class="container">
+        <h2 style="margin-bottom:20px;">📚 Курси забон</h2>
+        <div id="lessons-list"></div>
+    </main>
+    <nav class="bottom-nav">
+        <a href="index.html" class="nav-item"><div class="nav-icon">🏠</div>АСОСӢ</a>
+        <a href="lessons.html" class="nav-item active"><div class="nav-icon">🎓</div>ДАРСҲО</a>
+        <a href="dictionary.html" class="nav-item"><div class="nav-icon">📖</div>ЛУҒАТ</a>
+        <a href="profile.html" class="nav-item"><div class="nav-icon">👤</div>ПРОФИЛ</a>
+    </nav>
+    <script src="app.js"></script>
+    <script>
+        function render() {
+            const data = db('y_less').filter(x => x.cat === 'main' || !x.cat);
+            const done = db('y_done');
+            document.getElementById('lessons-list').innerHTML = data.map((x,i) => `
+                <div class="lesson-item">
+                    <div class="lesson-header" onclick="this.parentElement.classList.toggle('active')">
+                        <span>${i+1}. ${x.title} ${done.includes(x.id)?'✅':''}</span>
+                        <span style="color:var(--gold)">▼</span>
+                    </div>
+                    <div class="lesson-content">
+                        <div>${x.cont.replace(/\n/g,'<br>')}</div>
+                        <button class="btn-done" onclick="mark(${x.id})">${done.includes(x.id)?'ХАТМ ШУД':'ХАТМ КАРДАМ ✅'}</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        function mark(id) {
+            let d = db('y_done'); d = d.includes(id)?d.filter(i=>i!==id):[...d,id];
+            localStorage.setItem('y_done', JSON.stringify(d)); render();
+        }
+        window.onload = () => { applyTheme(); render(); };
+    </script>
+</body>
+</html>
