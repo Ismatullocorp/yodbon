@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="tg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ - ЁДБОН PRO</title>
+    <link rel="stylesheet" href="style.css">
+    <script>
+        const t = localStorage.getItem('y_t') || "0";
+        document.documentElement.className = t === "1" ? "theme-day" : "theme-night";
+    </script>
+    <style>
+        body { overflow-y: auto; padding-bottom: 50px; }
+        .admin-nav { display: flex; gap: 10px; margin-bottom: 20px; }
+        .nav-btn { flex: 1; padding: 12px; border-radius: 12px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-weight: 800; cursor: pointer; font-size: 11px; transition: 0.3s; }
+        .nav-btn.active { background: var(--gold); color: #000; border-color: var(--gold); }
+        
+        .form-box { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 20px; margin-bottom: 30px; }
+        .form-label { display: block; font-size: 11px; font-weight: 800; opacity: 0.6; margin-bottom: 5px; text-transform: uppercase; margin-top: 10px; }
+        
+        .list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .filter-select { background: none; border: 1px solid var(--gold); color: var(--gold); padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; outline: none; }
+        
+        .data-item { background: var(--card); border: 1px solid var(--border); padding: 12px 15px; border-radius: 15px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .action-btns { display: flex; gap: 8px; }
+        .act-btn { width: 32px; height: 32px; border-radius: 8px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">👑 АДМИН</div>
+        <a href="index.html" style="color:var(--gold); text-decoration:none; font-weight:800; font-size:13px">🏠 БОЗГАШТ</a>
+    </header>
+
+    <main class="container">
+        <div class="admin-nav">
+            <button class="nav-btn active" id="btn-s" onclick="setMode('s')">СЛАЙДЕР</button>
+            <button class="nav-btn" id="btn-l" onclick="setMode('l')">ДАРС / ТОПИК</button>
+            <button class="nav-btn" id="btn-d" onclick="setMode('d')">ЛУҒАТ</button>
+        </div>
+
+        <div class="form-box">
+            <h3 id="f-head" style="margin-bottom:10px; font-size:16px; color:var(--gold)">Иловаи нав</h3>
+            <div id="f-inputs"></div>
+            <input type="hidden" id="edit-id">
+            <button class="btn" onclick="handleSave()" style="margin-top:20px">ЗАХИРА КАРДАН</button>
+        </div>
+
+        <div class="list-header">
+            <span style="font-size:12px; font-weight:800; opacity:0.5;">МАВОДҲОИ МАВҶУДА</span>
+            <select id="f-filter" class="filter-select" onchange="renderList()" style="display:none;">
+                <option value="all">ҲАМАИ БАХШҲО</option>
+                <option value="main">📘 ДАРСҲО</option>
+                <option value="history">📜 ТАЪРИХ</option>
+                <option value="culture">🏛️ ФАРҲАНГ</option>
+                <option value="language">✍️ ЗАБОН</option>
+                <option value="chat">💬 ГУФТУГӮ</option>
+                <option value="tourism">🏔️ ТУРИЗМ</option>
+            </select>
+        </div>
+        <div id="f-list"></div>
+    </main>
+
+    <script src="app.js"></script>
+    <script>
+        let mode = 's', currentImg = "";
+
+        function setMode(m) {
+            mode = m;
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('btn-'+m).classList.add('active');
+            document.getElementById('edit-id').value = "";
+            document.getElementById('f-filter').style.display = (m === 'l') ? 'block' : 'none';
+            renderForm();
+        }
+
+        function renderForm() {
+            const box = document.getElementById('f-inputs');
+            const id = document.getElementById('edit-id').value;
+            document.getElementById('f-head').innerText = id ? "Таҳрир кардани мавод" : "Иловаи маводи нав";
+
+            if(mode === 's') {
+                box.innerHTML = `
+                    <label class="form-label">Интихоби акс</label>
+                    <input type="file" class="input" onchange="const r=new FileReader(); r.onload=()=>currentImg=r.result; r.readAsDataURL(this.files[0])">
+                    <label class="form-label">Сарлавҳаи рӯи акс</label>
+                    <input id="v2" class="input" placeholder="...">`;
+            } else if(mode === 'l') {
+                box.innerHTML = `
+                    <label class="form-label">Бахш (Категория)</label>
+                    <select id="v-cat" class="input">
+                        <option value="main">📘 Дарсҳои забон (Асосӣ)</option>
+                        <option value="history">📜 Таърих</option>
+                        <option value="culture">🏛️ Фарҳанг</option>
+                        <option value="language">✍️ Забон</option>
+                        <option value="chat">💬 Гуфтугӯ</option>
+                        <option value="tourism">🏔️ Туризм</option>
+                    </select>
+                    <label class="form-label">Сарлавҳа</label>
+                    <input id="v1" class="input" placeholder="Номи мавзӯъ">
+                    <label class="form-label">Матни пурра</label>
+                    <textarea id="v2" class="input" style="height:120px" placeholder="Матн..."></textarea>`;
+            } else {
+                box.innerHTML = `
+                    <label class="form-label">Калима (Тоҷикӣ)</label>
+                    <input id="v1" class="input" placeholder="Масалан: Офтоб">
+                    <label class="form-label">Тарҷума (Яғнобӣ)</label>
+                    <input id="v2" class="input" placeholder="Масалан: Хор">`;
+            }
+            renderList();
+        }
+
+        function renderList() {
+            const list = document.getElementById('f-list');
+            const key = mode==='s'?'y_slider':mode==='l'?'y_less':'y_words';
+            let data = db(key);
+
+            if(mode === 'l') {
+                const filter = document.getElementById('f-filter').value;
+                if(filter !== 'all') data = data.filter(x => x.cat === filter);
+            }
+            if(mode === 'd') data.sort((a,b) => a.word.localeCompare(b.word));
+
+            list.innerHTML = data.reverse().map(x => `
+                <div class="data-item">
+                    <div style="font-weight:700; font-size:13px; max-width:70%; overflow:hidden;">${x.word || x.title || 'Акс'}</div>
+                    <div class="action-btns">
+                        <button class="act-btn" style="background:#3b82f6" onclick="startEdit('${key}',${x.id})">⚙️</button>
+                        <button class="act-btn" style="background:#ef4444" onclick="handleDelete('${key}',${x.id})">✕</button>
+                    </div>
+                </div>
+            `).join('') || '<p style="text-align:center; opacity:0.3; padding:20px;">Мавод нест</p>';
+        }
+
+        function handleSave() {
+            const key = mode==='s'?'y_slider':mode==='l'?'y_less':'y_words';
+            let data = db(key);
+            const id = document.getElementById('edit-id').value;
+            const v1 = document.getElementById('v1')?.value || "";
+            const v2 = document.getElementById('v2').value;
+            const cat = document.getElementById('v-cat')?.value || "";
+
+            if(!v2) return alert("Мазмунро пур кунед!");
+
+            let obj = { id: id ? parseInt(id) : Date.now() };
+            if(mode==='s') { obj.url = currentImg || (id ? data.find(x=>x.id==id).url : ""); obj.title = v2; }
+            else if(mode==='l') { obj.title = v1; obj.cont = v2; obj.cat = cat; }
+            else { obj.word = v1; obj.mean = v2; }
+
+            if(id) data = data.map(x => x.id == id ? obj : x);
+            else data.push(obj);
+
+            localStorage.setItem(key, JSON.stringify(data));
+            currentImg = ""; document.getElementById('edit-id').value = "";
+            renderForm();
+        }
+
+        function startEdit(key, id) {
+            const x = db(key).find(i => i.id == id);
+            document.getElementById('edit-id').value = id;
+            renderForm();
+            if(mode !== 's') document.getElementById('v1').value = x.word || x.title;
+            document.getElementById('v2').value = x.mean || x.cont || x.title;
+            if(mode === 'l') document.getElementById('v-cat').value = x.cat;
+            window.scrollTo(0, 0);
+        }
+
+        function handleDelete(key, id) {
+            if(confirm('Нест карда шавад?')) {
+                localStorage.setItem(key, JSON.stringify(db(key).filter(x => x.id != id)));
+                renderList();
+            }
+        }
+
+        window.onload = () => { applyTheme(); renderForm(); };
+    </script>
+</body>
+</html>
